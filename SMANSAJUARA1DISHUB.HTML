@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Alamanda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts for soft look -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #7ec850;
+            --almond: #f6ecd9;
+            --dark-green: #4e944f;
+            --white: #fff;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--almond);
+            margin: 0;
+            color: var(--dark-green);
+        }
+        header {
+            background: var(--green);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+        nav a {
+            color: var(--dark-green);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem auto;
+            max-width: 1200px;
+        }
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(126, 200, 80, 0.1);
+            padding: 1.5rem;
+            flex: 1 1 350px;
+            min-width: 320px;
+            max-width: 400px;
+        }
+        .map-container {
+            height: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .energy-saved {
+            background: var(--green);
+            color: var(--white);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+        .chat-box {
+            height: 200px;
+            overflow-y: auto;
+            background: #eafbe6;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #cbe7b7;
+        }
+        .chat-input button {
+            background: var(--green);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        .news-list {
+            list-style: none;
+            padding: 0;
+        }
+        .news-list li {
+            margin-bottom: 1rem;
+        }
+        .news-list a {
+            color: var(--dark-green);
+            text-decoration: underline;
+        }
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Alamanda</h1>
+        <p>Aplikasi pemesanan kendaraan listrik & komunitas go green</p>
+    </header>
+    <nav>
+        <a href="#order">Pesan Kendaraan</a>
+        <a href="#chat">Grup Diskusi</a>
+        <a href="#news">Berita Go Green</a>
+        <a href="#energy">Energi Tersimpan</a>
+    </nav>
+    <div class="container">
+        <!-- Order EV Section -->
+        <section class="card" id="order">
+            <h2>Pesan Kendaraan Listrik</h2>
+            <form id="orderForm">
+                <label for="pickup">Lokasi Jemput:</label><br>
+                <input type="text" id="pickup" name="pickup" placeholder="Masukkan lokasi jemput" required><br><br>
+                <label for="destination">Tujuan:</label><br>
+                <input type="text" id="destination" name="destination" placeholder="Masukkan tujuan" required><br><br>
+                <button type="submit">Pesan Sekarang</button>
+            </form>
+            <div class="map-container" id="map"></div>
+        </section>
+        <!-- Group Chat Section -->
+        <section class="card" id="chat">
+            <h2>Grup Diskusi Pengguna</h2>
+            <div class="chat-box" id="chatBox">
+                <div><strong>Admin:</strong> Selamat datang di grup diskusi EcoRide!</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Ketik pesan...">
+                <button onclick="sendMessage()">Kirim</button>
+            </div>
+        </section>
+        <!-- News Section -->
+        <section class="card" id="news">
+            <h2>Berita Go Green Hari Ini</h2>
+            <ul class="news-list" id="newsList">
+                <li>Mengambil berita...</li>
+            </ul>
+        </section>
+        <!-- Energy Saved Section -->
+        <section class="card" id="energy">
+            <h2>Energi yang Telah Disimpan</h2>
+            <div class="energy-saved" id="energySaved">
+                0 kWh energi telah disimpan oleh pengguna hari ini!
+            </div>
+        </section>
+    </div>
+    <!-- Google Maps JS API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+    <script>
+        // Dummy energy saved calculation
+        let totalOrders = 0;
+        function updateEnergySaved() {
+            // Misal: 1 order = 1.2 kWh saved
+            const energy = (totalOrders * 1.2).toFixed(1);
+            document.getElementById('energySaved').innerText = `${energy} kWh energi telah disimpan oleh pengguna hari ini!`;
+        }
+
+        // Order form handler
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            totalOrders++;
+            updateEnergySaved();
+            alert('Pesanan kendaraan listrik Anda telah diterima!');
+        });
+
+        // Simple group chat (local only)
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (msg) {
+                const chatBox = document.getElementById('chatBox');
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>Anda:</strong> ${msg}`;
+                chatBox.appendChild(div);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                input.value = '';
+            }
+        }
+        document.getElementById('chatInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Fetch local go green news (using NewsAPI.org as example, replace with local API if available)
+        async function fetchNews() {
+            const newsList = document.getElementById('newsList');
+            newsList.innerHTML = '<li>Mengambil berita...</li>';
+            try {
+                // Example: NewsAPI.org (replace with your API key and local sources)
+                const res = await fetch('https://newsapi.org/v2/everything?q=go%20green%20indonesia&language=id&apiKey=YOUR_NEWSAPI_KEY');
+                const data = await res.json();
+                newsList.innerHTML = '';
+                if (data.articles && data.articles.length) {
+                    data.articles.slice(0, 5).forEach(article => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="${article.url}" target="_blank">${article.title}</a><br><small>${article.source.name}</small>`;
+                        newsList.appendChild(li);
+                    });
+                } else {
+                    newsList.innerHTML = '<li>Tidak ada berita terbaru.</li>';
+                }
+            } catch (e) {
+                newsList.innerHTML = '<li>Gagal mengambil berita.</li>';
+            }
+        }
+        fetchNews();
+
+        // Google Maps
+        let map;
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: -6.200000, lng: 106.816666 }, // Jakarta
+                zoom: 11,
+                styles: [
+                    {
+                        "featureType": "all",
+                        "elementType": "geometry",
+                        "stylers": [{ "color": "#e9f5e1" }]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry",
+                        "stylers": [{ "color": "#b8e0c6" }]
+                    }
+                ]
+            });
+        }
+        window.initMap = initMap;
+    </script>
+</body>
+</html>
